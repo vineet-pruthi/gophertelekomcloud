@@ -19,7 +19,7 @@ func TestCSSLoadBalancerFullLifecycle(t *testing.T) {
 	}
 	agency := clients.EnvOS.GetEnv("AGENCY_NAME")
 	if agency == "" {
-		// t.Skipf("OS_AGENCY_NAME is required for this test")
+		t.Skipf("OS_AGENCY_NAME is required for this test")
 	}
 	elbid := clients.EnvOS.GetEnv("ELB_ID")
 	if elbid == "" {
@@ -29,111 +29,29 @@ func TestCSSLoadBalancerFullLifecycle(t *testing.T) {
 	client, err := clients.NewCssV1Client()
 	th.AssertNoErr(t, err)
 
-	basicOpts := loadbalancer.EnableLoadBalancerOpts{
-		Enable: false,
-		ElbId:  elbid, // This is a placeholder. Replace with a valid ELB ID.
-		Agency: "css_upgrade_agency",
-		// Agency: agency,
+	basicOptsEnable := loadbalancer.EnableLoadBalancerOpts{
+		Enable: true,
+		ElbId:  elbid,
+		Agency: agency,
 	}
-	got := loadbalancer.EnableLoadBalancer(client, clusterID, basicOpts)
+	gotEnabled := loadbalancer.EnableLoadBalancer(client, clusterID, basicOptsEnable)
 	th.AssertNoErr(t, err)
 
-	log.Println("CSS log configuration:")
+	log.Println("CSS loadbalancer id")
 
-	tools.PrintResource(t, got)
+	tools.PrintResource(t, gotEnabled)
 
 	th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
-	/*
-		if got.LogSwitch {
-			log.Println("The logging has been already enabled.")
 
-		} else {
+	basicOptsDisable := loadbalancer.EnableLoadBalancerOpts{
+		Enable: false,
+		ElbId:  elbid,
+		Agency: agency,
+	}
+	gotDisable := loadbalancer.EnableLoadBalancer(client, clusterID, basicOptsDisable)
+	th.AssertNoErr(t, err)
+	tools.PrintResource(t, gotDisable)
 
-			basicOpts := logs.En{
-				Agency:   agency,
-				Bucket:   bucketName,
-				BasePath: "css/log",
-			}
-
-			err = logs.EnableLogs(client, clusterID, basicOpts)
-			th.AssertNoErr(t, err)
-
-			log.Println("Cluster logging enabled.")
-
-			th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
-		}
-
-		if got.AutoEnable {
-			log.Println("Cluster automatic backup for CSS logging has been already enabled.")
-		} else {
-
-			opts := logs.EnableAutomaticBackupOpts{
-				Period: period,
-			}
-
-			err = logs.EnableAutomaticBackups(client, clusterID, opts)
-			th.AssertNoErr(t, err)
-			log.Println("Cluster automatic backup for CSS logging enabled.")
-
-			th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
-		}
-
-		err = logs.DisableAutomaticBackups(client, clusterID)
-		th.AssertNoErr(t, err)
-
-		log.Println("Cluster automatic backup for CSS logging disabled.")
-
-		th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
-
-		err = logs.DisableLogs(client, clusterID)
-		th.AssertNoErr(t, err)
-
-		log.Println("Cluster logging disabled.")
-
-		th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
-	*/
+	th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
 
 }
-
-/*
-func TestGetCSSLoggingConfiguration(t *testing.T) {
-	clusterID := clients.EnvOS.GetEnv("CSS_CLUSTER_ID")
-	if clusterID == "" {
-		t.Skip("`OS_CSS_CLUSTER_ID` must be defined")
-	}
-
-	client, err := clients.NewCssV1Client()
-	th.AssertNoErr(t, err)
-
-	got, err := logs.GetConfiguration(client, clusterID)
-	th.AssertNoErr(t, err)
-	tools.PrintResource(t, got)
-}
-
-func TestUpdateCSSLoggingConfigurations(t *testing.T) {
-	clusterID := clients.EnvOS.GetEnv("CSS_CLUSTER_ID")
-	if clusterID == "" {
-		t.Skip("`OS_CSS_CLUSTER_ID` must be defined")
-	}
-	agency := clients.EnvOS.GetEnv("AGENCY_NAME")
-	if agency == "" {
-		t.Skipf("OS_AGENCY_NAME is required for this test")
-	}
-	bucketName := clients.EnvOS.GetEnv("BUCKET_NAME")
-	if bucketName == "" {
-		t.Skipf("OS_BUCKET_NAME is required for this test")
-	}
-
-	client, err := clients.NewCssV1Client()
-	th.AssertNoErr(t, err)
-
-	updatedOpts := logs.UpdateLogConfigurationOpts{
-		Agency:   agency,
-		Bucket:   bucketName,
-		BasePath: "css/log",
-	}
-
-	err = logs.UpdateLogs(client, clusterID, updatedOpts)
-	th.AssertNoErr(t, err)
-}
-*/
