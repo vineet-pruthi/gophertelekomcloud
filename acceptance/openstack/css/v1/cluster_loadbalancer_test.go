@@ -30,27 +30,19 @@ func TestCSSLoadBalancerFullLifecycle(t *testing.T) {
 	th.AssertNoErr(t, err)
 
 	basicOptsEnable := loadbalancer.EnableLoadBalancerOpts{
-		Enable: true,
 		ElbId:  elbid,
 		Agency: agency,
 	}
-	gotEnabled := loadbalancer.EnableLoadBalancer(client, clusterID, basicOptsEnable)
+	elbID, err := loadbalancer.EnableLoadBalancer(client, clusterID, basicOptsEnable)
 	th.AssertNoErr(t, err)
-
 	log.Println("CSS loadbalancer id")
-
-	tools.PrintResource(t, gotEnabled)
+	tools.PrintResource(t, elbID)
 
 	th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
 
-	basicOptsDisable := loadbalancer.EnableLoadBalancerOpts{
-		Enable: false,
-		ElbId:  elbid,
-		Agency: agency,
-	}
-	gotDisable := loadbalancer.EnableLoadBalancer(client, clusterID, basicOptsDisable)
+	err = loadbalancer.DisableLoadBalancer(client, clusterID)
+
 	th.AssertNoErr(t, err)
-	tools.PrintResource(t, gotDisable)
 
 	th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
 
