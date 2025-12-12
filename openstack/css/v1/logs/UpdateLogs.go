@@ -5,8 +5,8 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/internal/build"
 )
 
-type UpdateLogConfigurationOpts struct {
-	// These parameters are passed to the logs.UpdateLogs function.
+type UpdateLogBackupOpts struct {
+	// These parameters are passed to the logs.UpdateLogBackup function.
 	// Agency is the agency name used for the css cluster.
 	Agency string `json:"agency" required:"true"`
 	// BasePath is the obs path where the logs should be stored for the css cluster.
@@ -15,8 +15,8 @@ type UpdateLogConfigurationOpts struct {
 	Bucket string `json:"logBucket" required:"true"`
 }
 
-type UpdateRealTimeLogConfigurationOpts struct {
-	// These parameters are passed to the logs.UpdateRealTimeLogs function.
+type UpdateLogIngestionOpts struct {
+	// These parameters are passed to the logs.UpdateLogIngestion function.
 	// Index prefix for storing logs.
 	IndexPrefix string `json:"index_prefix"`
 	// Log retention duration.
@@ -25,21 +25,32 @@ type UpdateRealTimeLogConfigurationOpts struct {
 	TargetClusterId string `json:"target_cluster_id"`
 }
 
-// UpdateLogs will change the cluster logging configurations based on UpdateLogConfigurationOpts.
-func UpdateLogs(client *golangsdk.ServiceClient, clusterID string, opts UpdateLogConfigurationOpts) error {
+// UpdateLogBackup will update log backup configurations.
+func UpdateLogBackup(client *golangsdk.ServiceClient, clusterID string, opts UpdateLogBackupOpts) error {
 	b, err := build.RequestBody(opts, "")
 	if err != nil {
 		return err
 	}
 
-	_, err = client.Post(client.ServiceURL("clusters", clusterID, "logs", "settings"), b, nil, &golangsdk.RequestOpts{
+	queryParam := getOpts{
+		Action: "base_log_collect",
+	}
+
+	url, err := golangsdk.NewURLBuilder().
+		WithEndpoints("clusters", clusterID, "logs", "settings").
+		WithQueryParams(&queryParam).Build()
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Post(client.ServiceURL(url.String()), b, nil, &golangsdk.RequestOpts{
 		OkCodes: []int{200},
 	})
 	return err
 }
 
-// UpdateRealTimeLogs will change the real time log collect configurations.
-func UpdateRealTimeLogs(client *golangsdk.ServiceClient, clusterID string, opts UpdateRealTimeLogConfigurationOpts) error {
+// UpdateLogIngestion will update log ingestion configurations.
+func UpdateLogIngestion(client *golangsdk.ServiceClient, clusterID string, opts UpdateLogIngestionOpts) error {
 	b, err := build.RequestBody(opts, "")
 	if err != nil {
 		return err

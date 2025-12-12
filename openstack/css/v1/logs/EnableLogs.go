@@ -5,8 +5,8 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/internal/build"
 )
 
-type EnableLogsOpts struct {
-	// These parameters are passed to the logs.EnableLogs function.
+type EnableLogBackupOpts struct {
+	// These parameters are passed to the logs.EnableLogBackup function.
 	// Agency is the agency name used for the css cluster.
 	Agency string `json:"agency" required:"true"`
 	// Indicates whether to enable automatic backup.
@@ -19,7 +19,8 @@ type EnableLogsOpts struct {
 	Period string `json:"period"`
 }
 
-type EnableRealTimeLogsOpts struct {
+type EnableLogIngestionOpts struct {
+	// These parameters are passed to the logs.EnableLogIngestion function.
 	// Prefix of the index for saving logs.
 	IndexPrefix string `json:"index_prefix"`
 	// Log retention duration.
@@ -28,27 +29,31 @@ type EnableRealTimeLogsOpts struct {
 	TargetClusterId string `json:"target_cluster_id"`
 }
 
-// EnableLogs function is used to enable the log switch of a CSS cluster base on EnableLogsOpts.
-func EnableLogs(client *golangsdk.ServiceClient, clusterID string, opts EnableLogsOpts) error {
+// EnableLogBackup function is used to enable the log backup switch based on EnableLogBackupOpts.
+func EnableLogBackup(client *golangsdk.ServiceClient, clusterID string, opts EnableLogBackupOpts) error {
 	b, err := build.RequestBody(opts, "")
 	if err != nil {
 		return err
 	}
 
-	url := client.ServiceURL("clusters", clusterID, "logs", "open")
+	queryParam := getOpts{
+		Action: "base_log_collect",
+	}
+	url, err := golangsdk.NewURLBuilder().
+		WithEndpoints("clusters", clusterID, "logs", "open").
+		WithQueryParams(&queryParam).Build()
+	if err != nil {
+		return err
+	}
 
-	_, err = client.Post(url, b, nil, &golangsdk.RequestOpts{
+	_, err = client.Post(client.ServiceURL(url.String()), b, nil, &golangsdk.RequestOpts{
 		OkCodes: []int{200},
-		MoreHeaders: map[string]string{
-			"Content-Type": "application/json",
-		},
 	})
-
 	return err
 }
 
-// EnableRealTimeLogs function is used to enable the log switch of a CSS cluster base on EnableLogsOpts.
-func EnableRealTimeLogs(client *golangsdk.ServiceClient, clusterID string, opts EnableRealTimeLogsOpts) error {
+// EnableLogIngestion function is used to enable the log ingestion switch based on EnableLogIngestionOpts.
+func EnableLogIngestion(client *golangsdk.ServiceClient, clusterID string, opts EnableLogIngestionOpts) error {
 	b, err := build.RequestBody(opts, "")
 	if err != nil {
 		return err

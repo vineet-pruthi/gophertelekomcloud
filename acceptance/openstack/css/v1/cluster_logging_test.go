@@ -46,13 +46,13 @@ func TestCSSLoggingFullLifecycle(t *testing.T) {
 
 	} else {
 
-		basicOpts := logs.EnableLogsOpts{
+		basicOpts := logs.EnableLogBackupOpts{
 			Agency:   agency,
 			Bucket:   bucketName,
 			BasePath: "css/log",
 		}
 
-		err = logs.EnableLogs(client, clusterID, basicOpts)
+		err = logs.EnableLogBackup(client, clusterID, basicOpts)
 		th.AssertNoErr(t, err)
 
 		log.Println("Cluster logging enabled.")
@@ -82,7 +82,7 @@ func TestCSSLoggingFullLifecycle(t *testing.T) {
 
 	th.AssertNoErr(t, clusters.WaitForCluster(client, clusterID, timeout))
 
-	err = logs.DisableLogs(client, clusterID)
+	err = logs.DisableLogBackup(client, clusterID)
 	th.AssertNoErr(t, err)
 
 	log.Println("Cluster logging disabled.")
@@ -121,12 +121,12 @@ func TestUpdateCSSLoggingConfigurations(t *testing.T) {
 	client, err := clients.NewCssV1Client()
 	th.AssertNoErr(t, err)
 
-	updatedOpts := logs.UpdateLogConfigurationOpts{
+	updatedOpts := logs.UpdateLogBackupOpts{
 		Agency:   agency,
 		Bucket:   bucketName,
 		BasePath: "css/log",
 	}
 
-	err = logs.UpdateLogs(client, clusterID, updatedOpts)
+	err = logs.UpdateLogBackup(client, clusterID, updatedOpts)
 	th.AssertNoErr(t, err)
 }

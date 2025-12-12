@@ -5,7 +5,7 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/internal/extract"
 )
 
-type LogConfiguration struct {
+type LogBackupResp struct {
 	// The agency name.
 	Agency string `json:"agency"`
 	// Indicates whether to enable automatic backup.
@@ -26,7 +26,7 @@ type LogConfiguration struct {
 	UpdateAt int `json:"updateAt"`
 }
 
-type RealTimeLogConfiguration struct {
+type LogIngestionResp struct {
 	// CSS cluster ID.
 	ClusterID string `json:"clusterId"`
 	// Start time of a real-time log collection task.
@@ -46,19 +46,19 @@ type RealTimeLogConfiguration struct {
 }
 
 // GetConfiguration function will query the details of CSS cluster logging and returns a LogConfiguration object.
-func GetConfiguration(client *golangsdk.ServiceClient, clusterID string) (*LogConfiguration, error) {
+func GetConfiguration(client *golangsdk.ServiceClient, clusterID string) (*LogBackupResp, error) {
 	raw, err := client.Get(client.ServiceURL("clusters", clusterID, "logs", "settings"), nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var res LogConfiguration
+	var res LogBackupResp
 	err = extract.IntoStructPtr(raw.Body, &res, "logConfiguration")
 	return &res, err
 }
 
 // GetRealTimeConfiguration function will query the details of CSS cluster logging and returns a LogConfiguration object.
-func GetRealTimeConfiguration(client *golangsdk.ServiceClient, clusterID string) (*RealTimeLogConfiguration, error) {
+func GetRealTimeConfiguration(client *golangsdk.ServiceClient, clusterID string) (*LogIngestionResp, error) {
 
 	queryParam := getOpts{
 		Action: "real_time_log_collect",
@@ -75,7 +75,7 @@ func GetRealTimeConfiguration(client *golangsdk.ServiceClient, clusterID string)
 		return nil, err
 	}
 
-	var res RealTimeLogConfiguration
+	var res LogIngestionResp
 	err = extract.IntoStructPtr(raw.Body, &res, "realTimeLogCollectRecord")
 	return &res, err
 }
